@@ -15,7 +15,7 @@ public class Req {
 
     public static Req of(String content) {
         final int minParam = 4;
-        String[] array = content.split("/|\r\n");
+        String[] array = content.split("/|" + System.lineSeparator());
         if (array.length < minParam) {
             throw new IllegalArgumentException("Не верный запрос");
         }

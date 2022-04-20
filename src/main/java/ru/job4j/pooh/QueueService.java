@@ -10,17 +10,18 @@ public class QueueService implements Service {
 
     @Override
     public Resp process(Req req) {
-        Resp rsl = null;
-        if ("queue".equals(req.getPoohMode()) && "POST".equals(req.httpRequestType())) {
+        Resp rsl = new Resp("", "501");
+        if ("POST".equals(req.httpRequestType())) {
             rsl = processPOST(req);
-        } else if ("queue".equals(req.getPoohMode()) && "GET".equals(req.httpRequestType())) {
+        } else if ("GET".equals(req.httpRequestType())) {
             rsl = processGET(req);
         }
         return rsl;
     }
 
     private Resp processGET(Req req) {
-        String param = queue.get(req.getSourceName()).poll();
+        String param = queue.getOrDefault(req.getSourceName(), new ConcurrentLinkedQueue<>())
+                .poll();
         String status = "204";
         if (param == null) {
             param = "";

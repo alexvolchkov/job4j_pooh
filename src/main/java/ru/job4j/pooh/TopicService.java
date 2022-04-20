@@ -10,10 +10,10 @@ public class TopicService implements Service {
 
     @Override
     public Resp process(Req req) {
-        Resp rsl = null;
-        if ("topic".equals(req.getPoohMode()) && "POST".equals(req.httpRequestType())) {
+        Resp rsl = new Resp("", "501");
+        if ("POST".equals(req.httpRequestType())) {
             rsl = processPOST(req);
-        } else if ("topic".equals(req.getPoohMode()) && "GET".equals(req.httpRequestType())) {
+        } else if ("GET".equals(req.httpRequestType())) {
             rsl = processGET(req);
         }
         return rsl;
@@ -23,7 +23,9 @@ public class TopicService implements Service {
         queue.putIfAbsent(req.getSourceName(), new ConcurrentHashMap<>());
         Map<String, Queue<String>> nameTopic = queue.get(req.getSourceName());
             nameTopic.putIfAbsent(req.getParam(), new ConcurrentLinkedQueue<>());
-            String param = queue.get(req.getSourceName()).get(req.getParam()).poll();
+            String param = queue.getOrDefault(req.getSourceName(), new ConcurrentHashMap<>())
+                    .getOrDefault(req.getParam(), new ConcurrentLinkedQueue<>())
+                    .poll();
             String status = "200";
         if (param == null) {
             param = "";
@@ -35,8 +37,8 @@ public class TopicService implements Service {
         Map<String, Queue<String>> nameTopic = queue.get(req.getSourceName());
         String status = "204";
         if (nameTopic != null) {
-            for (String s : nameTopic.keySet()) {
-                nameTopic.get(s).offer(req.getParam());
+            for (Queue<String> value : nameTopic.values()) {
+                value.offer(req.getParam());
             }
             status = "200";
         }
